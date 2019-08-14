@@ -33,7 +33,10 @@ RUN apt-get install -y build-essential libssl-dev \
     libffi-dev python3-dev libsasl2-dev libldap2-dev libxi-dev
 
 # Install extra useful tool for development
-RUN apt-get install -y vim less postgresql-client redis-tools
+RUN apt-get install -y vim less postgresql-client redis-tools libaio1 alien
+WORKDIR /home/superset
+COPY oracle-instantclient19.3-basic-19.3.0.0.0-1.x86_64.rpm .
+RUN alien -i ./oracle-instantclient19.3-basic-19.3.0.0.0-1.x86_64.rpm
 
 # Install nodejs for custom build
 # https://superset.incubator.apache.org/installation.html#making-your-own-build
@@ -45,13 +48,11 @@ WORKDIR /home/superset
 
 COPY requirements.txt .
 COPY requirements-dev.txt .
-COPY contrib/docker/requirements-extra.txt .
 
 RUN pip install --upgrade setuptools pip \
-    && pip install -r requirements.txt -r requirements-dev.txt -r requirements-extra.txt \
+    && pip install -r requirements.txt -r requirements-dev.txt \
+    && pip install gevent cx_Oracle \
     && rm -rf /root/.cache/pip
-
-RUN pip install gevent
 
 COPY --chown=superset:superset superset superset
 
@@ -64,6 +65,10 @@ RUN cd superset/assets \
     && npm ci \
     && npm run build \
     && rm -rf node_modules
+
+
+ENV ORACLE_HOME=/usr/lib/oracle/19.3/client64
+ENV PATH=$PATH:$ORACLE_HOME/bin
 
 COPY contrib/docker/docker-init.sh .
 COPY contrib/docker/docker-entrypoint.sh /entrypoint.sh

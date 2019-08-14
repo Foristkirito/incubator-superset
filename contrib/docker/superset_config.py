@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 import os
+from werkzeug.contrib.cache import FileSystemCache
 
 
 def get_env_variable(var_name, default=None):
@@ -56,3 +57,6 @@ class CeleryConfig(object):
 
 
 CELERY_CONFIG = CeleryConfig
+# from werkzeug.contrib.cache import FileSystemCache
+# RESULTS_BACKEND = FileSystemCache('/tmp/sqllab_cache', default_timeout=60*24*7)
+os.environ['NLS_LANG'] = 'SIMPLIFIED CHINESE_CHINA.ZHS16GBK'
